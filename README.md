@@ -49,6 +49,9 @@ docker compose up -d
 
 # 4. Check that all containers are healthy
 docker compose ps
+
+# 5. Run the included service health check helper
+bash scripts/health-check.sh
 ```
 
 ---
@@ -127,6 +130,10 @@ meetstack/
 ├── docker-compose.yml       # Single compose file for all services
 ├── .env.example             # Template — copy to .env and fill in secrets
 ├── .gitignore
+├── .github/
+│   ├── actions/             # Composite / reusable action scaffolding
+│   └── workflows/           # GitHub Actions workflow definitions
+├── .temp/                   # Local-only temp files (ignored by Git)
 ├── README.md
 ├── services/
 │   ├── n8n/                 # Bind-mount config / credentials for n8n
@@ -141,9 +148,26 @@ meetstack/
 
 ---
 
+## Automation
+
+- CI includes `.github/workflows/compose-validate.yml`, which validates
+  `docker-compose.yml` with `.env.example` on push/PR.
+- The `.github/actions/` folder is scaffolded for future reusable composite
+  actions.
+
+---
+
+## Operations helpers
+
+- `bash scripts/health-check.sh` verifies all core services are running.
+- `bash scripts/backup.sh` writes per-volume backup archives to
+  `.temp/backups/<timestamp>/`.
+- `bash scripts/restore.sh <backup-dir> --force` restores those archives.
+
+---
+
 ## Notes
 
 - **`.env` is never committed** — only `.env.example` is tracked by Git.
-- Named Docker volumes handle all persistent data. You can back them up with
-  `docker run --rm -v <volume>:/data -v $(pwd):/backup alpine tar czf /backup/<volume>.tar.gz /data`.
+- Use the scripts in `scripts/` for volume backup and restore operations.
 - Use `docker compose logs -f <service>` to tail logs for a specific service.

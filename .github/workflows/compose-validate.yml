@@ -1,0 +1,25 @@
+name: Compose Validate
+
+on:
+  pull_request:
+    paths:
+      - docker-compose.yml
+      - .env.example
+      - .github/workflows/compose-validate.yml
+  push:
+    branches:
+      - main
+    paths:
+      - docker-compose.yml
+      - .env.example
+      - .github/workflows/compose-validate.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        run: docker compose --env-file .env.example config > /dev/null
