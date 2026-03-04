@@ -5,6 +5,8 @@ on:
     paths:
       - docker-compose.yml
       - .env.example
+      - nginx/proxy.conf
+      - scripts/*.sh
       - .github/workflows/compose-validate.yml
   push:
     branches:
@@ -12,6 +14,8 @@ on:
     paths:
       - docker-compose.yml
       - .env.example
+      - nginx/proxy.conf
+      - scripts/*.sh
       - .github/workflows/compose-validate.yml
 
 jobs:
@@ -23,3 +27,8 @@ jobs:
 
       - name: Validate Docker Compose configuration
         run: docker compose --env-file .env.example config > /dev/null
+
+      - name: Lint shell scripts
+        run: |
+          sudo apt-get install -y shellcheck
+          shellcheck scripts/*.sh

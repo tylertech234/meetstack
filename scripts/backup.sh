@@ -31,6 +31,7 @@ for volume in "${volumes[@]}"; do
     -v "$volume:/data:ro" \
     -v "$out_dir:/backup" \
     alpine sh -c "tar czf /backup/${volume}.tar.gz -C /data ."
+  ls -lh "$out_dir/${volume}.tar.gz"
 done
 
 echo "Backup complete: $out_dir"

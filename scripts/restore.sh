@@ -23,6 +23,10 @@ if [[ "$force_flag" != "--force" ]]; then
   exit 1
 fi
 
+echo "WARNING: Ensure the stack is stopped before restoring to avoid data corruption." >&2
+echo "         Run: docker compose down" >&2
+echo ""
+
 shopt -s nullglob
 archives=("$backup_dir"/*.tar.gz)
 shopt -u nullglob
