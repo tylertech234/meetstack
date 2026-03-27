@@ -66,18 +66,18 @@ if (Test-Path ".env") {
     $env_content = Get-Content ".env.example" -Raw
 
     # Replace changeme placeholders with generated secrets
-    $n8nPw      = New-Password
     $vikDbRoot  = New-Password
     $vikDbPw    = New-Password
     $vikJwt     = New-HexSecret
     $wikiDbPw   = New-Password
+    $webuiKey   = New-HexSecret
 
     $env_content = $env_content `
-        -replace 'N8N_BASIC_AUTH_PASSWORD=changeme',          "N8N_BASIC_AUTH_PASSWORD=$n8nPw" `
         -replace 'VIKUNJA_DB_ROOT_PASSWORD=changeme_root',    "VIKUNJA_DB_ROOT_PASSWORD=$vikDbRoot" `
         -replace 'VIKUNJA_DB_PASSWORD=changeme_vikunja',      "VIKUNJA_DB_PASSWORD=$vikDbPw" `
         -replace 'VIKUNJA_JWT_SECRET=changeme_jwt_secret',    "VIKUNJA_JWT_SECRET=$vikJwt" `
-        -replace 'WIKIJS_DB_PASSWORD=changeme_wikijs',        "WIKIJS_DB_PASSWORD=$wikiDbPw"
+        -replace 'WIKIJS_DB_PASSWORD=changeme_wikijs',        "WIKIJS_DB_PASSWORD=$wikiDbPw" `
+        -replace 'WEBUI_SECRET_KEY=changeme_webui_secret',    "WEBUI_SECRET_KEY=$webuiKey"
 
     Set-Content -Path ".env" -Value $env_content -NoNewline
     Write-OK "Generated .env with secure passwords"

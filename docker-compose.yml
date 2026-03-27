@@ -18,17 +18,15 @@ volumes:
 services:
   # ─── n8n ────────────────────────────────────────────────────────────────────
   n8n:
-    image: n8nio/n8n:1.47.1
+    image: n8nio/n8n:2.13.3
     container_name: n8n
     restart: unless-stopped
     expose:
       - "5678"
     environment:
       - TZ=${TZ}
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
       - N8N_SECURE_COOKIE=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
       - WEBHOOK_URL=${N8N_WEBHOOK_URL}
     volumes:
       - n8n_data:/home/node/.n8n
@@ -44,7 +42,7 @@ services:
 
   # ─── Ollama ─────────────────────────────────────────────────────────────────
   ollama:
-    image: ollama/ollama:0.3.12
+    image: ollama/ollama:0.18.3
     container_name: ollama
     restart: unless-stopped
     expose:
@@ -74,7 +72,7 @@ services:
 
   # ─── Open WebUI ─────────────────────────────────────────────────────────────
   open-webui:
-    image: ghcr.io/open-webui/open-webui:0.3.21
+    image: ghcr.io/open-webui/open-webui:0.8.12
     container_name: open-webui
     restart: unless-stopped
     expose:
@@ -82,6 +80,7 @@ services:
     environment:
       - TZ=${TZ}
       - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
     volumes:
       - open_webui_data:/app/backend/data
       - ./services/open-webui:/app/backend/config
@@ -121,7 +120,7 @@ services:
 
   # ─── Vikunja ────────────────────────────────────────────────────────────────
   vikunja:
-    image: vikunja/vikunja:0.23.0
+    image: vikunja/vikunja:2.2.2
     container_name: vikunja
     restart: unless-stopped
     expose:
@@ -152,7 +151,7 @@ services:
 
   # ─── Wiki.js (database) ────────────────────────────────────────────────────
   wikijs-db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: wikijs-db
     restart: unless-stopped
     environment:
@@ -251,7 +250,7 @@ services:
 
   # ─── Nginx Proxy Manager ────────────────────────────────────────────────────
   nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:2.11.3
+    image: jc21/nginx-proxy-manager:2.14.0
     container_name: nginx-proxy-manager
     restart: unless-stopped
     ports:
