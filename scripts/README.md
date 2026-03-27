@@ -54,3 +54,14 @@ PowerShell:
 .\scripts\update-stack.ps1 -Gpu
 .\scripts\update-stack.ps1 -DryRun
 ```
+
+### `compact-docker-vhdx.ps1`
+
+Compacts the Docker Desktop WSL2 virtual disk (`ext4.vhdx`) to reclaim
+unused space. WSL2 VHDXs grow when data is written but never auto-shrink.
+**Must be run as Administrator.**
+
+```powershell
+# From an elevated PowerShell:
+.\scripts\compact-docker-vhdx.ps1
+```
