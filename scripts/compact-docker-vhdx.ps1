@@ -23,10 +23,16 @@ if (-not $isAdmin) {
     exit 1
 }
 
-$vhdxPath = "$env:LOCALAPPDATA\Docker\wsl\data\ext4.vhdx"
+# Docker Desktop v29+ uses docker_data.vhdx; older versions used ext4.vhdx
+$candidates = @(
+    "$env:LOCALAPPDATA\Docker\wsl\disk\docker_data.vhdx",
+    "$env:LOCALAPPDATA\Docker\wsl\data\ext4.vhdx"
+)
+$vhdxPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-if (-not (Test-Path $vhdxPath)) {
-    Write-Host "ERROR: VHDX not found at: $vhdxPath" -ForegroundColor Red
+if (-not $vhdxPath) {
+    Write-Host "ERROR: Docker VHDX not found. Searched:" -ForegroundColor Red
+    $candidates | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
     pause
     exit 1
 }
