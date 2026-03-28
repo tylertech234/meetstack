@@ -1,8 +1,8 @@
 # meetstack
 
-A self-hosted meetings and organisation stack for an **Air Force Cadets** program,
-launched from a single `docker-compose.yml` and managed through Nginx Proxy Manager.
-Designed to run on a laptop or a single-board computer (e.g. Raspberry Pi 5).
+A self-hosted productivity and collaboration stack launched from a single
+`docker-compose.yml` and managed through Nginx Proxy Manager. Designed to run
+on a laptop, desktop, or single-board computer (e.g. Raspberry Pi 5).
 
 ---
 
@@ -10,32 +10,32 @@ Designed to run on a laptop or a single-board computer (e.g. Raspberry Pi 5).
 
 | Service | Purpose |
 |---|---|
-| **n8n** | Workflow automation (Gmail, Discord, reminders, minutes pipeline) |
+| **n8n** | Workflow automation (email, chat, reminders, pipelines) |
 | **Ollama** | Local LLM inference engine |
 | **Open WebUI** | Chat UI for Ollama models |
-| **Vikunja** | Task / project management |
-| **Wiki.js** | Knowledge base, FAQ, meeting minutes archive |
+| **Vikunja** | Task and project management |
+| **Wiki.js** | Knowledge base and documentation |
 | **Radicale** | Shared CalDAV calendar |
-| **Whisper** | Speech-to-text (meeting audio transcription) |
+| **Whisper** | Speech-to-text transcription |
 | **Nginx Proxy Manager** | Reverse proxy & SSL termination |
 
 All services share a single internal Docker network (`meetstack`). Only Nginx
 Proxy Manager exposes ports to the host, keeping everything else off the public
-network interface. Whisper is internal-only (consumed by n8n, not proxied).
+network interface.
 
 ---
 
-## Cadets Use Cases
+## Example Use Cases
 
 | Use case | Services involved |
 |---|---|
 | **Meeting minutes** — transcribe audio, summarise, publish | Whisper → Ollama → Wiki.js (via n8n) |
-| **Gmail auto-reply** — scan inbox, answer FAQs automatically | n8n → Ollama → Gmail |
-| **Discord Q&A** — answer common questions in a channel | n8n → Ollama → Discord |
-| **Shared calendar** — meeting schedule, events, camps | Radicale + any CalDAV client |
-| **Calendar reminders** — daily digest of upcoming events | n8n → Radicale → Discord / email |
+| **Email automation** — scan inbox, draft replies, send digests | n8n → Ollama → email provider |
+| **Chat Q&A** — answer questions in Discord / Slack / Teams | n8n → Ollama → chat platform |
+| **Shared calendar** — meetings, events, deadlines | Radicale + any CalDAV client |
+| **Calendar reminders** — daily digest of upcoming events | n8n → Radicale → email / chat |
 | **Task management** — action items, assignments, tracking | Vikunja |
-| **Wiki / FAQ** — SOPs, policies, enrolment info, resources | Wiki.js |
+| **Knowledge base** — documentation, SOPs, FAQs | Wiki.js |
 | **Chat with LLM** — ad-hoc questions, drafting, brainstorming | Open WebUI → Ollama |
 
 See [`services/n8n/workflows/README.md`](services/n8n/workflows/README.md) for
@@ -142,7 +142,7 @@ available through Nginx Proxy Manager using `.localhost` domains:
 
 | Service | URL | Default Login |
 |---|---|---|
-| **Nginx Proxy Manager** admin | <http://localhost:81> | `admin@example.com` / `changeme` (change on first login) |
+| **Nginx Proxy Manager** admin | <http://localhost:8181> | `admin@example.com` / `changeme` (change on first login) |
 | **n8n** | <http://n8n.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
 | **Open WebUI** (Ollama chat) | <http://chat.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
 | **Vikunja** (tasks) | <http://tasks.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
@@ -183,7 +183,7 @@ then searches Wiki.js with those keywords for relevant context.
 | Endpoint | Method | Purpose |
 |---|---|---|
 | `/webhook/agent` | POST | Ask the AI agent a question (RAG with wiki + tasks) |
-| `/webhook/escalate` | POST | Create a high-priority Vikunja task for SO review |
+| `/webhook/escalate` | POST | Create a high-priority Vikunja task for review |
 | `/webhook/learn` | POST | Add a verified Q&A to the wiki knowledge base |
 
 ### Usage
@@ -194,15 +194,15 @@ curl -X POST http://n8n.localhost/webhook/agent \
   -H "Content-Type: application/json" \
   -d '{"message": "What are the latest meeting minutes about?"}'
 
-# Escalate to Senior Officer
+# Escalate for review
 curl -X POST http://n8n.localhost/webhook/escalate \
   -H "Content-Type: application/json" \
-  -d '{"question": "Leave policy?", "user": "cadet-smith", "agent_response": "Not confident"}'
+  -d '{"question": "Leave policy?", "user": "jsmith", "agent_response": "Not confident"}'  
 
 # Teach the agent (adds to wiki)
 curl -X POST http://n8n.localhost/webhook/learn \
   -H "Content-Type: application/json" \
-  -d '{"question": "Uniform policy for field exercises?", "answer": "ACU pattern required..."}'
+  -d '{"question": "What is the onboarding process?", "answer": "New members complete orientation then..."}'  
 ```
 
 ### Model Selection
@@ -311,6 +311,9 @@ meetstack/
 │   ├── setup-vikunja.sh      # Seed Vikunja with projects & tasks
 │   ├── setup-n8n.sh          # Create n8n demo workflows
 │   ├── setup-agent.sh        # Create AI agent workflows (RAG, escalation, learning)
+│   ├── update-stack.sh       # Pull latest images, recreate, prune (bash)
+│   ├── update-stack.ps1      # Pull latest images, recreate, prune (PowerShell)
+│   ├── compact-docker-vhdx.ps1 # Shrink Docker WSL2 virtual disk (admin)
 │   ├── backup.sh             # Dump all Docker volumes to tar archives
 │   ├── restore.sh            # Restore a volume from a tar archive
 │   └── pull-model.sh         # Pull the Ollama model from .env

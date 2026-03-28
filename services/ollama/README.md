@@ -36,16 +36,16 @@ Or use the helper script:
 bash scripts/pull-model.sh
 ```
 
-## Custom Modelfile for cadets context
+## Custom Modelfile example
 
 You can create a `Modelfile` here to derive a model with a baked-in system
-prompt for the cadets program:
+prompt tailored to your organisation:
 
 ```dockerfile
 FROM phi3:mini
 
 SYSTEM """
-You are CadetBot, an AI assistant for an Air Force Cadets squadron.
+You are MeetBot, an AI assistant for your team.
 You help with meeting minutes, FAQs, and scheduling.
 Be professional, concise, and never fabricate information.
 """
@@ -54,7 +54,7 @@ Be professional, concise, and never fabricate information.
 Build it with:
 
 ```bash
-docker exec -it ollama ollama create cadetbot -f /etc/ollama/Modelfile
+docker exec -it ollama ollama create meetbot -f /etc/ollama/Modelfile
 ```
 
 ## GPU notes

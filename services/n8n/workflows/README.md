@@ -10,7 +10,7 @@ is deployed. Each section describes the trigger, nodes, and data flow.
 
 ## 1. Gmail Scanner & Auto-Reply
 
-Automatically scans incoming Gmail for common cadets-related questions and
+Automatically scans incoming Gmail for common questions and
 replies using the local LLM with FAQ context.
 
 ```
@@ -28,11 +28,11 @@ replies using the local LLM with FAQ context.
 
 1. **Gmail Trigger** — poll every 5 minutes for unread messages in inbox
 2. **HTTP Request → Ollama** — POST to `http://ollama:11434/api/generate`
-   - System prompt: cadets FAQ knowledge base (meeting times, enrollment, uniform policy, etc.)
+   - System prompt: FAQ knowledge base (meeting times, onboarding, policies, etc.)
    - User prompt: email subject + body
    - Ask the model to classify as: `faq`, `human`, or `info`
 3. **Switch** — route based on classification
-4. **HTTP Request → Ollama** (FAQ branch) — generate a polite reply using cadets context
+4. **HTTP Request → Ollama** (FAQ branch) — generate a polite reply using the knowledge base context
 5. **Gmail Send** — reply to original sender
 6. **Vikunja API** (human branch) — create a task in the "Inbox" project for manual review
 
@@ -46,7 +46,7 @@ replies using the local LLM with FAQ context.
 ## 2. Discord Q&A Bot
 
 Monitors a designated Discord channel and answers common questions using the
-local LLM with cadets FAQ context.
+local LLM with FAQ context.
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -59,7 +59,7 @@ local LLM with cadets FAQ context.
 
 1. **Discord Trigger** — on new message in `#ask-questions` channel
 2. **Filter** — ignore bot messages (check `message.author.bot === false`)
-3. **HTTP Request → Ollama** — generate answer with cadets FAQ system prompt
+3. **HTTP Request → Ollama** — generate answer with the FAQ system prompt
 4. **Discord Send** — post reply in the same channel, mentioning the original author
 5. **Rate Limiter** — use n8n's built-in Wait node to limit to 1 reply per 10 seconds
 
@@ -95,7 +95,7 @@ structured meeting minutes, and publishes to Wiki.js.
 3. **HTTP Request → Whisper** — POST file to `http://whisper:9000/asr`, get transcript JSON
 4. **HTTP Request → Ollama** — summarise with system prompt:
    ```
-   You are a meeting minutes assistant for an Air Force Cadets squadron.
+   You are a meeting minutes assistant.
    Given a transcript or notes, produce structured minutes with:
    - Date and attendees
    - Agenda items discussed
@@ -187,7 +187,7 @@ to trigger escalation or learning workflows.
                                                           ▼           ▼           ▼
                                                    ┌───────────┐ ┌─────────┐ ┌─────────┐
                                                    │ Respond   │ │Escalate │ │ Learn   │
-                                                   │ (high)    │ │ (low)   │ │ (SO ok) │
+                                                   │ (high)    │ │ (low)   │ │ (ok)    │
                                                    └───────────┘ └─────────┘ └─────────┘
 ```
 
@@ -201,14 +201,14 @@ to trigger escalation or learning workflows.
    - Sends context + question to Ollama `llama3.2:3b` with MeetStack system prompt
    - Parses confidence from the LLM response
    - If low confidence → calls `/webhook/escalate` (Escalation Manager)
-   - If SO provides answer later → calls `/webhook/learn` (Learn from SO)
+   - If admin provides answer later → calls `/webhook/learn` (Learn from Admin)
 3. **Respond to Webhook** — returns `{ answer, confidence, wiki_results, source }`
 
 ### Key design decisions
 
 - Uses `this.helpers.httpRequest()` in Code node for all HTTP calls (avoids escaping issues with HTTP Request nodes)
 - Wiki.js search uses **GraphQL variables** (not string interpolation) to safely pass user input
-- System prompt includes full MeetStack knowledge (parade nights, CO, enrolment, uniform, events)
+- System prompt includes full MeetStack knowledge (schedules, contacts, policies, events)
 - Confidence threshold: response containing "not confident" or "don't have" triggers escalation
 
 ### Environment / credentials needed
@@ -222,7 +222,7 @@ to trigger escalation or learning workflows.
 ## 7. Escalation Manager
 
 Creates a high-priority Vikunja task when the Agent Router is not confident
-in its answer, flagging it for Senior Officer review.
+in its answer, flagging it for admin review.
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -248,9 +248,9 @@ in its answer, flagging it for Senior Officer review.
 
 ---
 
-## 8. Learn from SO Response
+## 8. Learn from Admin Response
 
-When a Senior Officer provides the correct answer to an escalated question,
+When an admin provides the correct answer to an escalated question,
 this workflow saves the knowledge to Wiki.js so the agent can find it in
 future queries.
 
@@ -273,8 +273,8 @@ future queries.
 ### How the learning loop works
 
 1. Agent Router receives a question it can't answer confidently
-2. Escalation Manager creates a Vikunja task for SO review
-3. SO answers the task and triggers `/webhook/learn` with the Q&A
+2. Escalation Manager creates a Vikunja task for admin review
+3. Admin answers the task and triggers `/webhook/learn` with the Q&A
 4. Next time anyone asks a similar question, Wiki.js search returns the learned page
 5. Agent Router includes it as RAG context and answers confidently
 
@@ -287,21 +287,21 @@ future queries.
 ## System prompt template
 
 Save this as a reference for workflows #1, #2, and #3. Customise the FAQ
-content with your squadron's actual information.
+content with your team's actual information.
 
 ```text
-You are "CadetBot", an AI assistant for [Squadron Name] Australian/Canadian Air Force Cadets.
+You are "MeetBot", an AI assistant for your team or organisation.
 
 Key information:
-- Parade nights: [day] at [time], [location]
-- Commanding Officer: [name]
-- Enrolment: contact [email/phone] or visit [URL]
-- Uniform: [brief policy]
+- Meeting schedule: [day] at [time], [location]
+- Team lead: [name]
+- Onboarding: contact [email/phone] or visit [URL]
+- Policies: [brief summary]
 - Upcoming events: query the shared calendar for current events
 
 When answering:
 - Be professional, friendly, and concise
-- If you don't know the answer, say so and suggest contacting [CO name/email]
+- If you don't know the answer, say so and suggest contacting [team lead name/email]
 - Never make up information about dates, policies, or events
-- For sensitive topics (disciplinary, medical), direct to the appropriate officer
+- For sensitive topics, direct to the appropriate person
 ```

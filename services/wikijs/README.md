@@ -9,9 +9,9 @@ Place any files here that you want available inside the Wiki.js container at
 
 ## Purpose in this stack
 
-Wiki.js serves as the **knowledge base** for the cadets meeting group:
+Wiki.js serves as the **knowledge base** for your team:
 
-- **FAQ pages** — common questions about the program, enrollment, events
+- **FAQ pages** — common questions about your organisation, onboarding, events
 - **Standard Operating Procedures** — meeting templates, role responsibilities
 - **Meeting minutes archive** — n8n workflows automatically publish summarised minutes here via the Wiki.js GraphQL API
 - **Resource library** — training materials, policy documents, contact lists

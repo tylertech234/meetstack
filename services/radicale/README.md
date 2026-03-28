@@ -1,11 +1,11 @@
 # Radicale — CalDAV shared calendar
 
 Radicale is a lightweight CalDAV/CardDAV server (~15 MB image) used to manage
-shared calendars for the cadets meeting group.
+shared calendars for your team or organisation.
 
 ## Purpose in this stack
 
-- **Meeting schedule** — recurring parade nights, training events, camps
+- **Meeting schedule** — recurring meetings, training events, deadlines
 - **Reminders** — n8n queries upcoming events and sends reminders to Discord / email
 - **Shared access** — all members can subscribe from any CalDAV-capable client
 
